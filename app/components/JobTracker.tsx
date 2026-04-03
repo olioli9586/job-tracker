@@ -277,9 +277,12 @@ const JobTracker = () => {
           setPositions(new Set([...positions, applicationDetails.position.trim()]));
           setApplicationDetails({ company: '', position: '', jobDescription: '' });
           setShowApplicationPopup(false);
+        } else {
+          const err = await res.json().catch(() => ({}));
+          alert(`Save failed: ${err.error || res.statusText}`);
         }
       } catch (error) {
-        console.error('Failed to save application', error);
+        alert(`Save failed: ${error}`);
       }
     }
   };
