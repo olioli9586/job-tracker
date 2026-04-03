@@ -41,6 +41,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json(application);
     } catch (error) {
-        return NextResponse.json({ error: 'Error creating application' }, { status: 500 });
+        const msg = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({ error: msg }, { status: 500 });
     }
 }
