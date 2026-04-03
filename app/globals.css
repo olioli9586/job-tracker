@@ -1,26 +1,131 @@
 @import "tailwindcss";
 
+/* ── Design tokens ─────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-base:     #09090f;
+  --bg-surface:  #0e1019;
+  --bg-elevated: #141825;
+  --border:      rgba(255,255,255,0.06);
+  --border-md:   rgba(255,255,255,0.11);
+  --text-1:      #eceef4;
+  --text-2:      #8892a8;
+  --text-3:      #4a5270;
+  --accent:      #f59e0b;
+  --accent-dim:  rgba(245,158,11,0.12);
+  --accent-glow: rgba(245,158,11,0.25);
+  --blue:        #3b82f6;
+  --emerald:     #10b981;
+  --rose:        #f43f5e;
+  --violet:      #8b5cf6;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-1);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-syne);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base ───────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-1);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* ── Display numbers (Syne) ────────────────────────────────── */
+.font-display {
+  font-family: var(--font-syne), system-ui, sans-serif;
+}
+
+/* ── Hub card ───────────────────────────────────────────────── */
+.hub-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25);
+}
+
+/* Luminous top-edge highlight — more visible */
+.hub-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.08) 70%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hub-card:hover {
+  border-color: var(--border-md);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.35);
+}
+
+/* ── Stat number ────────────────────────────────────────────── */
+.stat-num {
+  font-family: var(--font-syne), system-ui, sans-serif;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  font-feature-settings: "tnum";
+}
+
+/* ── FAB pulse ring ────────────────────────────────────────── */
+@keyframes fab-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(245,158,11,0.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(245,158,11,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(245,158,11,0);    }
+}
+
+.fab-pulse {
+  animation: fab-pulse 2.5s ease-out infinite;
+}
+
+/* ── Sidebar scrollbar ──────────────────────────────────────── */
+aside::-webkit-scrollbar { width: 3px; }
+aside::-webkit-scrollbar-track { background: transparent; }
+aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+/* ── Custom scrollbar (global) ──────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 6px; }
+
+/* ── Input dark override ────────────────────────────────────── */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+}
+
+/* ── Smooth transitions on interactive elements only ─────────── */
+button, a, input, select, textarea {
+  transition: background-color 120ms ease, color 120ms ease,
+              border-color 120ms ease, box-shadow 120ms ease,
+              opacity 120ms ease, transform 100ms ease;
+}
+
+/* ── Recharts dark overrides ───────────────────────────────── */
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--border-md) !important;
+  border-radius: 8px !important;
+}
+
+/* ── Status pill dots ───────────────────────────────────────── */
+.dot-applied   { background: var(--blue); }
+.dot-waiting   { background: var(--accent); }
+.dot-nextstage { background: var(--violet); }
+.dot-offer     { background: var(--emerald); }
+.dot-rejected  { background: var(--rose); }
+.dot-ghosted   { background: var(--text-3); }

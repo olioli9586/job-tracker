@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Application {
+  id          Int      @id @default(autoincrement())
+  originalId  BigInt?  // To keep track of original IDs from localStorage
+  company     String
+  position    String
+  date        String   // "MM/DD/YYYY"
+  timestamp   String
+  fullDate    DateTime
+  status      String
+  lastUpdated DateTime @default(now())
+  
+  // Next Stage details
+  nextStageType String?
+  deadline      DateTime?
+  notes         String?
+  jobDescription String? // Store full JD
+}
+
+model DailyEntry {
+  id         Int      @id @default(autoincrement())
+  date       String   @unique // "MM/DD/YYYY"
+  count      Int
+  timestamps String   // JSON string of timestamps array
+}
+
+model Settings {
+  key   String @id
+  value String
+}
+
+model LeetCodeSession {
+  id        Int      @id @default(autoincrement())
+  date      String   // "MM/DD/YYYY"
+  easy      Int      @default(0)
+  medium    Int      @default(0)
+  hard      Int      @default(0)
+  topics    String   @default("[]") // JSON array of topic strings
+  notes     String?
+  createdAt DateTime @default(now())
+}
