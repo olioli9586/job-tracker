@@ -8,12 +8,12 @@ interface KanbanBoardProps {
 }
 
 const COLUMNS = [
-  { id: 'Applied', title: 'Applied', color: '#3b82f6', text: '#60a5fa' },
-  { id: 'Waiting for Response', title: 'Waiting', color: '#f5a623', text: '#fbbf24' },
-  { id: 'Next Stage', title: 'Next Stage', color: '#8b5cf6', text: '#a78bfa' },
-  { id: 'Offer', title: 'Offer', color: '#10b981', text: '#34d399' },
-  { id: 'Rejected', title: 'Rejected', color: '#f43f5e', text: '#fb7185' },
-  { id: 'Ghosted', title: 'Ghosted', color: '#8b95ad', text: '#8b95ad' },
+  { id: 'Applied', title: 'Applied', color: '#6d92c4', text: '#9db9dd' },
+  { id: 'Waiting for Response', title: 'Waiting', color: '#cf9455', text: '#ddb27e' },
+  { id: 'Next Stage', title: 'Next Stage', color: '#9a86c8', text: '#b6a5da' },
+  { id: 'Offer', title: 'Offer', color: '#6ea583', text: '#9cc4a8' },
+  { id: 'Rejected', title: 'Rejected', color: '#c26d63', text: '#d9a29a' },
+  { id: 'Ghosted', title: 'Ghosted', color: '#9a8f80', text: '#9a8f80' },
 ];
 
 const KanbanBoard: React.FC<KanbanBoardProps> = ({ applications, onStatusChange }) => {
@@ -54,7 +54,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ applications, onStatusChange 
                     className="p-4 mb-3 rounded-lg transition-all"
                     style={{
                       background: 'var(--bg-elevated)',
-                      border: app.pinned ? '1px solid rgba(245,166,35,0.35)' : '1px solid var(--border)',
+                      border: app.pinned ? '1px solid rgba(207,148,85,0.35)' : '1px solid var(--border)',
                       boxShadow: app.pinned ? 'inset 3px 0 0 var(--accent)' : undefined,
                     }}
                   >
@@ -71,7 +71,7 @@ const KanbanBoard: React.FC<KanbanBoardProps> = ({ applications, onStatusChange 
                       </div>
                       {app.status === 'Next Stage' && app.deadline && (
                         <div className="flex items-center gap-1 font-medium px-2 py-0.5 rounded"
-                          style={{ background: 'rgba(139,92,246,0.12)', color: '#a78bfa' }}>
+                          style={{ background: 'rgba(154,134,200,0.12)', color: '#b6a5da' }}>
                           <Clock className="w-3.5 h-3.5" />
                           {new Date(app.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </div>

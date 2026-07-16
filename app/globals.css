@@ -2,30 +2,31 @@
 
 /* ── Design tokens ─────────────────────────────────────────── */
 :root {
-  /* Ink-blue elevation scale — one hue family, three steps */
-  --bg-base:     #0a0d15;
-  --bg-surface:  #10141f;
-  --bg-elevated: #171c2b;
+  /* Warm espresso elevation scale — one hue family, three steps */
+  --bg-base:     #131011;
+  --bg-surface:  #1a1614;
+  --bg-elevated: #221d1a;
 
-  --border:      rgba(148,163,184,0.10);
-  --border-md:   rgba(148,163,184,0.20);
+  --border:      rgba(214,197,178,0.10);
+  --border-md:   rgba(214,197,178,0.20);
 
-  /* Text — three legible steps (old text-3 was too dim to read) */
-  --text-1:      #f2f4f9;
-  --text-2:      #a9b2c5;
-  --text-3:      #6d788f;
+  /* Text — warm paper whites, three legible steps */
+  --text-1:      #f4efe9;
+  --text-2:      #c0b4a6;
+  --text-3:      #8a7d6f;
 
-  --accent:      #f5a623;
-  --accent-deep: #d97706;
-  --accent-dim:  rgba(245,166,35,0.12);
-  --accent-glow: rgba(245,166,35,0.25);
+  /* Muted caramel accent — warm, not neon */
+  --accent:      #cf9455;
+  --accent-deep: #a96b39;
+  --accent-dim:  rgba(207,148,85,0.14);
+  --accent-glow: rgba(207,148,85,0.22);
 
-  /* Status hues — pill text (bright) + base (dot/bar) + tint (bg) */
-  --blue:        #3b82f6;
-  --emerald:     #10b981;
-  --rose:        #f43f5e;
-  --violet:      #8b5cf6;
-  --slate:       #8b95ad;
+  /* Status hues — desaturated to sit quietly on the warm dark */
+  --blue:        #6d92c4;
+  --emerald:     #6ea583;
+  --rose:        #c26d63;
+  --violet:      #9a86c8;
+  --slate:       #9a8f80;
 }
 
 @theme inline {
@@ -87,7 +88,7 @@ body {
 
 /* Pinned card — amber spine, the one card allowed to glow */
 .hub-card.pinned {
-  border-color: rgba(245,166,35,0.35);
+  border-color: rgba(207,148,85,0.35);
   box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.25), inset 3px 0 0 var(--accent);
 }
 
@@ -102,9 +103,9 @@ body {
 
 /* ── FAB pulse ring ────────────────────────────────────────── */
 @keyframes fab-pulse {
-  0%   { box-shadow: 0 0 0 0   rgba(245,166,35,0.5); }
-  70%  { box-shadow: 0 0 0 12px rgba(245,166,35,0);   }
-  100% { box-shadow: 0 0 0 0   rgba(245,166,35,0);    }
+  0%   { box-shadow: 0 0 0 0   rgba(207,148,85,0.45); }
+  70%  { box-shadow: 0 0 0 12px rgba(207,148,85,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(207,148,85,0);    }
 }
 
 .fab-pulse {

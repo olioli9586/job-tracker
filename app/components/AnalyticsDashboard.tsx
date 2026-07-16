@@ -18,12 +18,12 @@ const GOAL_PER_DAY = 10;
 const GOAL_START = new Date(2026, 6, 15); // July 15, 2026
 
 const STATUS_COLORS: Record<string, string> = {
-  'Applied': '#3b82f6',
-  'Waiting for Response': '#f5a623',
-  'Next Stage': '#8b5cf6',
-  'Offer': '#10b981',
-  'Rejected': '#f43f5e',
-  'Ghosted': '#94a3b8',
+  'Applied': '#6d92c4',
+  'Waiting for Response': '#cf9455',
+  'Next Stage': '#9a86c8',
+  'Offer': '#6ea583',
+  'Rejected': '#c26d63',
+  'Ghosted': '#a0958a',
 };
 
 function parseEntryDate(dateStr: string): Date {
@@ -41,7 +41,7 @@ function ProgressRing({ pct, size = 100, stroke = 9 }: { pct: number; size?: num
   const offset = circ - (Math.min(pct, 100) / 100) * circ;
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(148,163,184,0.12)" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(214,197,178,0.12)" strokeWidth={stroke} />
       <circle
         cx={size / 2} cy={size / 2} r={r} fill="none"
         stroke="var(--accent)" strokeWidth={stroke}
@@ -170,10 +170,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
 
   // Stage funnel
   const getFunnelData = () => [
-    { stage: 'Applied', count: totalApplications, color: '#3b82f6' },
-    { stage: 'Responded', count: responseCount, color: '#f5a623' },
-    { stage: 'Next Stage', count: nextStageCount, color: '#8b5cf6' },
-    { stage: 'Offer', count: applications.filter(a => a.status === 'Offer').length, color: '#10b981' },
+    { stage: 'Applied', count: totalApplications, color: '#6d92c4' },
+    { stage: 'Responded', count: responseCount, color: '#cf9455' },
+    { stage: 'Next Stage', count: nextStageCount, color: '#9a86c8' },
+    { stage: 'Offer', count: applications.filter(a => a.status === 'Offer').length, color: '#6ea583' },
   ];
 
   // Top companies
@@ -199,14 +199,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     : '0';
 
   const TOOLTIP_STYLE = {
-    backgroundColor: '#171c2b',
-    border: '1px solid rgba(148,163,184,0.20)',
+    backgroundColor: '#221d1a',
+    border: '1px solid rgba(214,197,178,0.20)',
     borderRadius: '8px',
     fontSize: '12px',
-    color: '#f2f4f9',
+    color: '#f4efe9',
   };
-  const GRID_COLOR = 'rgba(148,163,184,0.06)';
-  const TICK_COLOR = '#6d788f';
+  const GRID_COLOR = 'rgba(214,197,178,0.06)';
+  const TICK_COLOR = '#8a7d6f';
 
   return (
     <div className="space-y-5">
@@ -214,10 +214,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Primary stats — 4 accent cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total Apps', value: totalApplications, sub: null, color: '#f5a623', icon: <TrendingUp className="w-3.5 h-3.5" />, bg: 'rgba(245,158,11,0.1)' },
-          { label: 'Active Pipeline', value: activePipeline, sub: 'interviews/offers', color: '#3b82f6', icon: <Users className="w-3.5 h-3.5" />, bg: 'rgba(59,130,246,0.1)' },
-          { label: 'Rejection Rate', value: `${totalApplications > 0 ? ((rejectionCount / totalApplications) * 100).toFixed(1) : 0}%`, sub: null, color: '#f43f5e', icon: <XCircle className="w-3.5 h-3.5" />, bg: 'rgba(244,63,94,0.1)' },
-          { label: 'Current Streak', value: `${streak}d`, sub: 'consecutive days', color: '#f97316', icon: <Flame className="w-3.5 h-3.5" />, bg: 'rgba(249,115,22,0.1)' },
+          { label: 'Total Apps', value: totalApplications, sub: null, color: '#cf9455', icon: <TrendingUp className="w-3.5 h-3.5" />, bg: 'rgba(245,158,11,0.1)' },
+          { label: 'Active Pipeline', value: activePipeline, sub: 'interviews/offers', color: '#6d92c4', icon: <Users className="w-3.5 h-3.5" />, bg: 'rgba(109,146,196,0.1)' },
+          { label: 'Rejection Rate', value: `${totalApplications > 0 ? ((rejectionCount / totalApplications) * 100).toFixed(1) : 0}%`, sub: null, color: '#c26d63', icon: <XCircle className="w-3.5 h-3.5" />, bg: 'rgba(194,109,99,0.1)' },
+          { label: 'Current Streak', value: `${streak}d`, sub: 'consecutive days', color: '#c77f4a', icon: <Flame className="w-3.5 h-3.5" />, bg: 'rgba(199,127,74,0.1)' },
         ].map(({ label, value, sub, color, icon, bg }) => (
           <div key={label} className="hub-card p-5">
             <div className="flex items-center justify-between mb-3">
@@ -233,10 +233,10 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Secondary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Interview Rate', value: `${conversionRate}%`, sub: 'applied → stage', color: '#8b5cf6' },
-          { label: 'Response Rate', value: `${responseRate}%`, sub: 'got any reply', color: '#3b82f6' },
+          { label: 'Interview Rate', value: `${conversionRate}%`, sub: 'applied → stage', color: '#9a86c8' },
+          { label: 'Response Rate', value: `${responseRate}%`, sub: 'got any reply', color: '#6d92c4' },
           { label: 'Avg / Day', value: avgPerDay, sub: 'applications', color: 'var(--text-1)' },
-          { label: 'This Week', value: thisWeek, sub: weekTrend !== null ? `${weekTrend >= 0 ? '+' : ''}${weekTrend}% vs last wk` : 'no data yet', color: weekTrend !== null && weekTrend < 0 ? '#f43f5e' : '#10b981' },
+          { label: 'This Week', value: thisWeek, sub: weekTrend !== null ? `${weekTrend >= 0 ? '+' : ''}${weekTrend}% vs last wk` : 'no data yet', color: weekTrend !== null && weekTrend < 0 ? '#c26d63' : '#6ea583' },
         ].map(({ label, value, sub, color }) => (
           <div key={label} className="hub-card p-4">
             <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--text-3)' }}>{label}</div>
@@ -253,8 +253,8 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           <h3 className="text-sm font-bold" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>Daily Goal — {GOAL_PER_DAY}/day</h3>
           <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full" style={
             goal.delta >= 0
-              ? { background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' }
-              : { background: 'rgba(244,63,94,0.12)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.2)' }
+              ? { background: 'rgba(110,165,131,0.12)', color: '#9cc4a8', border: '1px solid rgba(110,165,131,0.2)' }
+              : { background: 'rgba(194,109,99,0.12)', color: '#d9a29a', border: '1px solid rgba(194,109,99,0.2)' }
           }>
             {goal.delta >= 0 ? `${goal.delta} ahead of pace` : `${Math.abs(goal.delta)} behind pace`}
           </span>
@@ -285,7 +285,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         <div className="mt-5 rounded-full h-2" style={{ background: 'rgba(255,255,255,0.07)' }}>
           <div className="h-2 rounded-full" style={{
             width: `${goal.pct}%`,
-            background: 'linear-gradient(90deg, var(--accent), #fbbf24)',
+            background: 'linear-gradient(90deg, var(--accent), #ddb27e)',
             boxShadow: '0 0 12px var(--accent-glow)',
           }} />
         </div>
@@ -305,9 +305,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <XAxis dataKey="date" tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <ReferenceLine y={GOAL_PER_DAY} stroke="#f5a623" strokeDasharray="4 4" strokeOpacity={0.5} ifOverflow="extendDomain"
-                  label={{ value: 'goal', position: 'insideTopRight', fontSize: 10, fill: '#f5a623', opacity: 0.7 }} />
-                <Bar dataKey="count" fill="#f5a623" radius={[4, 4, 0, 0]} name="Apps" />
+                <ReferenceLine y={GOAL_PER_DAY} stroke="#cf9455" strokeDasharray="4 4" strokeOpacity={0.5} ifOverflow="extendDomain"
+                  label={{ value: 'goal', position: 'insideTopRight', fontSize: 10, fill: '#cf9455', opacity: 0.7 }} />
+                <Bar dataKey="count" fill="#cf9455" radius={[4, 4, 0, 0]} name="Apps" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -322,7 +322,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <XAxis dataKey="week" tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Apps" />
+                <Bar dataKey="count" fill="#9a86c8" radius={[4, 4, 0, 0]} name="Apps" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -385,7 +385,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 10, fill: '#8892a8' }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="count" fill="#f5a623" radius={[0, 4, 4, 0]} name="Applications" />
+                <Bar dataKey="count" fill="#cf9455" radius={[0, 4, 4, 0]} name="Applications" />
               </BarChart>
             </ResponsiveContainer>
           </div>

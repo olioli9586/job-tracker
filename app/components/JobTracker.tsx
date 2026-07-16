@@ -522,12 +522,12 @@ const JobTracker = () => {
   return (
     <div className="flex min-h-screen font-sans" style={{ background: 'var(--bg-base)', color: 'var(--text-1)' }}>
       {/* Sidebar Navigation */}
-      <aside className="w-60 fixed h-full z-20 hidden md:flex flex-col" style={{ background: 'linear-gradient(180deg, #0d111c 0%, #0a0d15 100%)', borderRight: '1px solid var(--border)' }}>
+      <aside className="w-60 fixed h-full z-20 hidden md:flex flex-col" style={{ background: 'linear-gradient(180deg, #191512 0%, #131011 100%)', borderRight: '1px solid var(--border)' }}>
         {/* Logo */}
         <div className="px-5 pt-6 pb-5" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #d97706 100%)', boxShadow: '0 0 16px var(--accent-glow)' }}>
+              style={{ background: 'linear-gradient(135deg, var(--accent) 0%, #a96b39 100%)', boxShadow: '0 0 16px var(--accent-glow)' }}>
               <TrendingUp className="w-4 h-4 text-white" />
             </div>
             <div>
@@ -600,14 +600,14 @@ const JobTracker = () => {
           <div className="rounded-xl p-4 pb-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>Pace</span>
-              <span className="text-xs font-semibold" style={{ color: pace.delta >= 0 ? '#34d399' : '#fb7185' }}>
+              <span className="text-xs font-semibold" style={{ color: pace.delta >= 0 ? '#9cc4a8' : '#d9a29a' }}>
                 {pace.delta >= 0 ? `+${pace.delta} ahead` : `${pace.delta} behind`}
               </span>
             </div>
             <div className="rounded-full h-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
               <div className="h-1 rounded-full" style={{
                 width: `${pace.pct}%`,
-                background: 'linear-gradient(90deg, var(--accent), #fbbf24)',
+                background: 'linear-gradient(90deg, var(--accent), #ddb27e)',
                 boxShadow: '0 0 8px var(--accent-glow)',
               }} />
             </div>
@@ -647,7 +647,7 @@ const JobTracker = () => {
       <main className="flex-1 md:ml-60">
         {/* Top Header */}
         <header className="sticky top-0 z-10 px-8 py-4 flex justify-between items-center backdrop-blur-md"
-          style={{ background: 'rgba(10,13,21,0.85)', borderBottom: '1px solid var(--border)' }}>
+          style={{ background: 'rgba(19,16,17,0.85)', borderBottom: '1px solid var(--border)' }}>
           <div>
             <h2 className="text-lg font-bold font-display" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>
               {currentPage === 'main' ? 'Active Applications' :
@@ -717,7 +717,7 @@ const JobTracker = () => {
                     onClick={() => setShowFilters(!showFilters)}
                     className="px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium"
                     style={showFilters
-                      ? { background: 'var(--accent-dim)', border: '1px solid rgba(245,166,35,0.3)', color: 'var(--accent)' }
+                      ? { background: 'var(--accent-dim)', border: '1px solid rgba(207,148,85,0.3)', color: 'var(--accent)' }
                       : { background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
                   >
                     <LayoutList className="w-4 h-4" />
@@ -786,14 +786,14 @@ const JobTracker = () => {
                               {app.pinned && <Pin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--accent)', fill: 'var(--accent)' }} />}
                               <h3 className="font-bold text-base" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>{app.company}</h3>
                               <span className="px-2.5 py-0.5 text-xs font-medium rounded-full flex items-center gap-1.5" style={
-                                app.status === 'Applied' ? { background: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.2)' } :
-                                app.status === 'Waiting for Response' ? { background: 'rgba(245,166,35,0.12)', color: '#fbbf24', border: '1px solid rgba(245,166,35,0.2)' } :
-                                app.status === 'Next Stage' ? { background: 'rgba(139,92,246,0.12)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' } :
-                                app.status === 'Offer' ? { background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' } :
-                                { background: 'rgba(244,63,94,0.12)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.2)' }
+                                app.status === 'Applied' ? { background: 'rgba(109,146,196,0.12)', color: '#9db9dd', border: '1px solid rgba(109,146,196,0.2)' } :
+                                app.status === 'Waiting for Response' ? { background: 'rgba(207,148,85,0.12)', color: '#ddb27e', border: '1px solid rgba(207,148,85,0.2)' } :
+                                app.status === 'Next Stage' ? { background: 'rgba(154,134,200,0.12)', color: '#b6a5da', border: '1px solid rgba(154,134,200,0.2)' } :
+                                app.status === 'Offer' ? { background: 'rgba(110,165,131,0.12)', color: '#9cc4a8', border: '1px solid rgba(110,165,131,0.2)' } :
+                                { background: 'rgba(194,109,99,0.12)', color: '#d9a29a', border: '1px solid rgba(194,109,99,0.2)' }
                               }>
                                 <span className="w-1.5 h-1.5 rounded-full" style={{
-                                  background: app.status === 'Applied' ? '#3b82f6' : app.status === 'Waiting for Response' ? '#f5a623' : app.status === 'Next Stage' ? '#8b5cf6' : app.status === 'Offer' ? '#10b981' : '#f43f5e'
+                                  background: app.status === 'Applied' ? '#6d92c4' : app.status === 'Waiting for Response' ? '#cf9455' : app.status === 'Next Stage' ? '#9a86c8' : app.status === 'Offer' ? '#6ea583' : '#c26d63'
                                 }} />
                                 {app.status}
                               </span>
@@ -809,7 +809,7 @@ const JobTracker = () => {
                               </div>
                             )}
                             {app.status === 'Next Stage' && app.nextStageType && (
-                              <div className="mt-3 flex items-center gap-2 text-xs px-3 py-2 rounded-lg" style={{ background: 'rgba(139,92,246,0.1)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' }}>
+                              <div className="mt-3 flex items-center gap-2 text-xs px-3 py-2 rounded-lg" style={{ background: 'rgba(154,134,200,0.1)', color: '#b6a5da', border: '1px solid rgba(154,134,200,0.2)' }}>
                                 <span className="font-semibold">Next:</span> {app.nextStageType}
                                 {app.deadline && <span className="ml-auto opacity-70">due {new Date(app.deadline).toLocaleDateString('en-US')}</span>}
                               </div>
@@ -833,7 +833,7 @@ const JobTracker = () => {
                             <button onClick={() => deleteApplication(app.id)}
                               className="p-1.5 rounded-lg transition-colors"
                               style={{ color: 'var(--text-3)' }}
-                              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(244,63,94,0.1)'; (e.currentTarget as HTMLButtonElement).style.color = '#f43f5e'; }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(194,109,99,0.1)'; (e.currentTarget as HTMLButtonElement).style.color = '#c26d63'; }}
                               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)'; }}
                             ><Trash2 className="w-3.5 h-3.5" /></button>
                           </div>
@@ -843,20 +843,20 @@ const JobTracker = () => {
                           {app.status === 'Applied' && (
                             <button onClick={() => openNextStagePopup(app.id)}
                               className="flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors"
-                              style={{ background: 'rgba(139,92,246,0.1)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' }}>
+                              style={{ background: 'rgba(154,134,200,0.1)', color: '#b6a5da', border: '1px solid rgba(154,134,200,0.2)' }}>
                               Next Stage
                             </button>
                           )}
                           {app.status === 'Next Stage' && (
                             <button onClick={() => updateApplicationStatus(app.id, 'Waiting for Response')}
                               className="flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors"
-                              style={{ background: 'rgba(245,166,35,0.1)', color: '#fbbf24', border: '1px solid rgba(245,166,35,0.2)' }}>
+                              style={{ background: 'rgba(207,148,85,0.1)', color: '#ddb27e', border: '1px solid rgba(207,148,85,0.2)' }}>
                               Waiting for Response
                             </button>
                           )}
                           <button onClick={() => updateApplicationStatus(app.id, 'Rejected')}
                             className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
-                            style={{ color: '#fb7185' }}>
+                            style={{ color: '#d9a29a' }}>
                             Reject
                           </button>
                         </div>
@@ -927,19 +927,19 @@ const JobTracker = () => {
                             {app.lastUpdated && <span className="ml-2">| Last updated: {new Date(app.lastUpdated).toLocaleDateString('en-US')}</span>}
                           </div>
                         </div>
-                        <span className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'rgba(100,116,139,0.15)', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.2)' }}>
+                        <span className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'rgba(148,138,125,0.15)', color: '#a0958a', border: '1px solid rgba(148,138,125,0.2)' }}>
                           Ghosted
                         </span>
                       </div>
                       <div className="flex gap-1.5 flex-wrap">
                         <button onClick={() => updateApplicationStatus(app.id, 'Applied')}
                           className="px-2.5 py-1 text-xs rounded-lg font-medium"
-                          style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.2)' }}>
+                          style={{ background: 'rgba(109,146,196,0.12)', color: '#9db9dd', border: '1px solid rgba(109,146,196,0.2)' }}>
                           Move to Active
                         </button>
                         <button onClick={() => updateApplicationStatus(app.id, 'Rejected')}
                           className="px-2.5 py-1 text-xs rounded-lg font-medium"
-                          style={{ background: 'rgba(244,63,94,0.1)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.2)' }}>
+                          style={{ background: 'rgba(194,109,99,0.1)', color: '#d9a29a', border: '1px solid rgba(194,109,99,0.2)' }}>
                           Reject
                         </button>
                         <button onClick={() => deleteApplication(app.id)}
@@ -1017,7 +1017,7 @@ const JobTracker = () => {
                           </div>
                           <div className="flex gap-2">
                             <button onClick={saveEditApp} className="px-3 py-1.5 text-xs rounded-lg flex items-center gap-1 font-medium"
-                              style={{ background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' }}>
+                              style={{ background: 'rgba(110,165,131,0.12)', color: '#9cc4a8', border: '1px solid rgba(110,165,131,0.2)' }}>
                               <Check className="w-3 h-3" />Save
                             </button>
                             <button onClick={cancelEditApp} className="px-3 py-1.5 text-xs rounded-lg flex items-center gap-1 font-medium"
@@ -1042,13 +1042,13 @@ const JobTracker = () => {
                                 {app.lastUpdated && <span className="ml-2">| Rejected: {new Date(app.lastUpdated).toLocaleDateString('en-US')}</span>}
                               </div>
                             </div>
-                            <span className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'rgba(244,63,94,0.1)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.2)' }}>
+                            <span className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'rgba(194,109,99,0.1)', color: '#d9a29a', border: '1px solid rgba(194,109,99,0.2)' }}>
                               Rejected
                             </span>
                           </div>
                           <button onClick={() => updateApplicationStatus(app.id, 'Applied')}
                             className="px-2.5 py-1 text-xs rounded-lg font-medium"
-                            style={{ background: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.2)' }}>
+                            style={{ background: 'rgba(109,146,196,0.12)', color: '#9db9dd', border: '1px solid rgba(109,146,196,0.2)' }}>
                             Reactivate
                           </button>
                         </>
@@ -1112,7 +1112,7 @@ const JobTracker = () => {
         onClick={addOneToToday}
         className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full font-semibold text-sm fab-pulse"
         style={{
-          background: 'linear-gradient(135deg, var(--accent) 0%, #d97706 100%)',
+          background: 'linear-gradient(135deg, var(--accent) 0%, #a96b39 100%)',
           color: '#000',
           padding: '14px 24px',
           boxShadow: '0 8px 32px var(--accent-glow), 0 2px 8px rgba(0,0,0,0.4)',
@@ -1164,7 +1164,7 @@ const JobTracker = () => {
               <div className="flex gap-2 pt-1">
                 <button onClick={saveApplicationDetails}
                   className="flex-1 py-2.5 text-sm font-semibold rounded-lg"
-                  style={{ background: 'linear-gradient(135deg, var(--accent), #d97706)', color: '#000' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--accent), #a96b39)', color: '#000' }}>
                   Save
                 </button>
                 <button onClick={skipApplicationDetails}
@@ -1218,7 +1218,7 @@ const JobTracker = () => {
               <div className="flex gap-2 pt-1">
                 <button onClick={saveNextStage}
                   className="flex-1 py-2.5 text-sm font-semibold rounded-lg"
-                  style={{ background: 'linear-gradient(135deg, var(--accent), #d97706)', color: '#000' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--accent), #a96b39)', color: '#000' }}>
                   Save
                 </button>
                 <button onClick={cancelNextStage}

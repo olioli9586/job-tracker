@@ -57,7 +57,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ onClose, onImportComplete }) 
           </button>
         </div>
 
-        <div className="mb-4 p-4 rounded-lg text-sm" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', color: '#93bbfd' }}>
+        <div className="mb-4 p-4 rounded-lg text-sm" style={{ background: 'rgba(109,146,196,0.08)', border: '1px solid rgba(109,146,196,0.2)', color: '#aec5e4' }}>
           <p className="font-semibold mb-2 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
             How to migrate your data:
@@ -101,7 +101,7 @@ console.log(JSON.stringify(data));`}
         />
 
         {error && (
-          <div className="mb-4 text-sm flex items-center gap-2" style={{ color: '#fb7185' }}>
+          <div className="mb-4 text-sm flex items-center gap-2" style={{ color: '#d9a29a' }}>
             <AlertCircle className="w-4 h-4" />
             {error}
           </div>
