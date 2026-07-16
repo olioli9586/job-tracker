@@ -199,7 +199,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     : '0';
 
   const TOOLTIP_STYLE = {
-    backgroundColor: '#221d1a',
+    backgroundColor: '#382e26',
     border: '1px solid rgba(214,197,178,0.20)',
     borderRadius: '8px',
     fontSize: '12px',

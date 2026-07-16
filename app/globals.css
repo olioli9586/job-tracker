@@ -2,13 +2,13 @@
 
 /* ── Design tokens ─────────────────────────────────────────── */
 :root {
-  /* Warm espresso elevation scale — one hue family, three steps */
-  --bg-base:     #131011;
-  --bg-surface:  #1a1614;
-  --bg-elevated: #221d1a;
+  /* Warm coffee elevation scale — visibly brown, not black */
+  --bg-base:     #251e18;
+  --bg-surface:  #2e2620;
+  --bg-elevated: #382e26;
 
-  --border:      rgba(214,197,178,0.10);
-  --border-md:   rgba(214,197,178,0.20);
+  --border:      rgba(214,197,178,0.12);
+  --border-md:   rgba(214,197,178,0.22);
 
   /* Text — warm paper whites, three legible steps */
   --text-1:      #f4efe9;

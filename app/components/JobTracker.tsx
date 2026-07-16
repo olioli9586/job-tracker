@@ -522,7 +522,7 @@ const JobTracker = () => {
   return (
     <div className="flex min-h-screen font-sans" style={{ background: 'var(--bg-base)', color: 'var(--text-1)' }}>
       {/* Sidebar Navigation */}
-      <aside className="w-60 fixed h-full z-20 hidden md:flex flex-col" style={{ background: 'linear-gradient(180deg, #191512 0%, #131011 100%)', borderRight: '1px solid var(--border)' }}>
+      <aside className="w-60 fixed h-full z-20 hidden md:flex flex-col" style={{ background: 'linear-gradient(180deg, #2a221b 0%, #251e18 100%)', borderRight: '1px solid var(--border)' }}>
         {/* Logo */}
         <div className="px-5 pt-6 pb-5" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3">
@@ -647,7 +647,7 @@ const JobTracker = () => {
       <main className="flex-1 md:ml-60">
         {/* Top Header */}
         <header className="sticky top-0 z-10 px-8 py-4 flex justify-between items-center backdrop-blur-md"
-          style={{ background: 'rgba(19,16,17,0.85)', borderBottom: '1px solid var(--border)' }}>
+          style={{ background: 'rgba(37,30,24,0.85)', borderBottom: '1px solid var(--border)' }}>
           <div>
             <h2 className="text-lg font-bold font-display" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>
               {currentPage === 'main' ? 'Active Applications' :
