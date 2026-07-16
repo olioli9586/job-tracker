@@ -96,13 +96,14 @@ const JobTracker = () => {
   const checkAndGhostStaleApplications = async () => {
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-    
+
     const activeStatuses = ['Applied', 'Waiting for Response', 'Next Stage', 'Offer'];
     const staleApps = applications.filter(app => {
       if (!activeStatuses.includes(app.status)) return false;
-      // Check application date (fullDate), not lastUpdated
-      const applicationDate = new Date(app.fullDate || app.date);
-      return applicationDate < threeMonthsAgo;
+      // Key off the last touch, not the application date — otherwise an old
+      // app you deliberately moved back to Active gets re-ghosted on reload.
+      const lastTouched = new Date(app.lastUpdated || app.fullDate || app.date);
+      return lastTouched < threeMonthsAgo;
     });
 
     // Update stale applications to Ghosted
