@@ -2,21 +2,30 @@
 
 /* ── Design tokens ─────────────────────────────────────────── */
 :root {
-  --bg-base:     #09090f;
-  --bg-surface:  #0e1019;
-  --bg-elevated: #141825;
-  --border:      rgba(255,255,255,0.06);
-  --border-md:   rgba(255,255,255,0.11);
-  --text-1:      #eceef4;
-  --text-2:      #8892a8;
-  --text-3:      #4a5270;
-  --accent:      #f59e0b;
-  --accent-dim:  rgba(245,158,11,0.12);
-  --accent-glow: rgba(245,158,11,0.25);
+  /* Ink-blue elevation scale — one hue family, three steps */
+  --bg-base:     #0a0d15;
+  --bg-surface:  #10141f;
+  --bg-elevated: #171c2b;
+
+  --border:      rgba(148,163,184,0.10);
+  --border-md:   rgba(148,163,184,0.20);
+
+  /* Text — three legible steps (old text-3 was too dim to read) */
+  --text-1:      #f2f4f9;
+  --text-2:      #a9b2c5;
+  --text-3:      #6d788f;
+
+  --accent:      #f5a623;
+  --accent-deep: #d97706;
+  --accent-dim:  rgba(245,166,35,0.12);
+  --accent-glow: rgba(245,166,35,0.25);
+
+  /* Status hues — pill text (bright) + base (dot/bar) + tint (bg) */
   --blue:        #3b82f6;
   --emerald:     #10b981;
   --rose:        #f43f5e;
   --violet:      #8b5cf6;
+  --slate:       #8b95ad;
 }
 
 @theme inline {
@@ -40,6 +49,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+::selection {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
 /* ── Display numbers (Syne) ────────────────────────────────── */
 .font-display {
   font-family: var(--font-syne), system-ui, sans-serif;
@@ -55,7 +69,7 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 8px 24px rgba(0,0,0,0.25);
 }
 
-/* Luminous top-edge highlight — more visible */
+/* Luminous top-edge highlight */
 .hub-card::before {
   content: '';
   position: absolute;
@@ -71,6 +85,12 @@ body {
   box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.35);
 }
 
+/* Pinned card — amber spine, the one card allowed to glow */
+.hub-card.pinned {
+  border-color: rgba(245,166,35,0.35);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 8px 24px rgba(0,0,0,0.25), inset 3px 0 0 var(--accent);
+}
+
 /* ── Stat number ────────────────────────────────────────────── */
 .stat-num {
   font-family: var(--font-syne), system-ui, sans-serif;
@@ -82,21 +102,24 @@ body {
 
 /* ── FAB pulse ring ────────────────────────────────────────── */
 @keyframes fab-pulse {
-  0%   { box-shadow: 0 0 0 0   rgba(245,158,11,0.5); }
-  70%  { box-shadow: 0 0 0 12px rgba(245,158,11,0);   }
-  100% { box-shadow: 0 0 0 0   rgba(245,158,11,0);    }
+  0%   { box-shadow: 0 0 0 0   rgba(245,166,35,0.5); }
+  70%  { box-shadow: 0 0 0 12px rgba(245,166,35,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(245,166,35,0);    }
 }
 
 .fab-pulse {
   animation: fab-pulse 2.5s ease-out infinite;
 }
 
-/* ── Sidebar scrollbar ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .fab-pulse { animation: none; }
+}
+
+/* ── Scrollbars ─────────────────────────────────────────────── */
 aside::-webkit-scrollbar { width: 3px; }
 aside::-webkit-scrollbar-track { background: transparent; }
 aside::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
 
-/* ── Custom scrollbar (global) ──────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 6px; }
@@ -106,6 +129,18 @@ input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   filter: invert(0.5);
   cursor: pointer;
+}
+
+/* ── Focus visibility ───────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--border-md) !important;
+  outline: none;
 }
 
 /* ── Smooth transitions on interactive elements only ─────────── */
@@ -128,4 +163,4 @@ button, a, input, select, textarea {
 .dot-nextstage { background: var(--violet); }
 .dot-offer     { background: var(--emerald); }
 .dot-rejected  { background: var(--rose); }
-.dot-ghosted   { background: var(--text-3); }
+.dot-ghosted   { background: var(--slate); }

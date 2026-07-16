@@ -45,19 +45,19 @@ const ImportModal: React.FC<ImportModalProps> = ({ onClose, onImportComplete }) 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+      <div className="hub-card p-6 w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Upload className="w-5 h-5" />
+          <h2 className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>
+            <Upload className="w-5 h-5" style={{ color: 'var(--accent)' }} />
             Import Data
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <button onClick={onClose} style={{ color: 'var(--text-3)' }}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="mb-4 bg-blue-50 p-4 rounded-lg text-sm text-blue-800">
+        <div className="mb-4 p-4 rounded-lg text-sm" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', color: '#93bbfd' }}>
           <p className="font-semibold mb-2 flex items-center gap-2">
             <AlertCircle className="w-4 h-4" />
             How to migrate your data:
@@ -72,10 +72,11 @@ const ImportModal: React.FC<ImportModalProps> = ({ onClose, onImportComplete }) 
         </div>
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Migration Script (Copy & Run in Browser Console)
+          <label className="block text-xs font-semibold uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-3)' }}>
+            Migration Script (Copy &amp; Run in Browser Console)
           </label>
-          <div className="bg-gray-100 p-3 rounded text-xs font-mono overflow-x-auto select-all cursor-pointer"
+          <div className="p-3 rounded-lg text-xs font-mono overflow-x-auto select-all cursor-pointer"
+               style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
                onClick={(e) => {
                  const range = document.createRange();
                  range.selectNode(e.currentTarget);
@@ -92,14 +93,15 @@ console.log(JSON.stringify(data));`}
         </div>
 
         <textarea
-          className="flex-1 p-3 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4 min-h-[200px]"
+          className="flex-1 p-3 rounded-lg font-mono text-sm focus:outline-none mb-4 min-h-[200px]"
+          style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-md)', color: 'var(--text-1)' }}
           placeholder="Paste the JSON output here..."
           value={jsonInput}
           onChange={(e) => setJsonInput(e.target.value)}
         />
 
         {error && (
-          <div className="mb-4 text-red-600 text-sm flex items-center gap-2">
+          <div className="mb-4 text-sm flex items-center gap-2" style={{ color: '#fb7185' }}>
             <AlertCircle className="w-4 h-4" />
             {error}
           </div>
@@ -108,14 +110,16 @@ console.log(JSON.stringify(data));`}
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium rounded-lg"
+            style={{ background: 'var(--bg-elevated)', color: 'var(--text-3)', border: '1px solid var(--border)' }}
           >
             Cancel
           </button>
           <button
             onClick={handleImport}
             disabled={!jsonInput || importing}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-sm font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-deep))', color: '#000' }}
           >
             {importing ? 'Importing...' : 'Import Data'}
           </button>

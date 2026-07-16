@@ -12,6 +12,7 @@ export interface Application {
     deadline?: string;
     notes?: string;
     jobDescription?: string;
+    pinned?: boolean;
 }
 
 export interface DailyEntry {
@@ -24,15 +25,4 @@ export interface DailyEntry {
 export interface Stats {
     entries: DailyEntry[];
     rejectionCount: number;
-}
-
-export interface LeetCodeSession {
-    id: number;
-    date: string;      // "MM/DD/YYYY"
-    easy: number;
-    medium: number;
-    hard: number;
-    topics: string;    // JSON string array
-    notes?: string;
-    createdAt: string;
 }

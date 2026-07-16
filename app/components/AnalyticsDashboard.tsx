@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell, Legend, ReferenceLine,
 } from 'recharts';
 import { Application, DailyEntry } from '../types';
 import { TrendingUp, Users, XCircle, Zap, Target, Flame, BarChart2, Building2 } from 'lucide-react';
@@ -10,12 +10,16 @@ interface AnalyticsDashboardProps {
   applications: Application[];
   dailyEntries: DailyEntry[];
   rejectionCount: number;
-  goalDate?: string; // "YYYY-MM-DD"
 }
+
+const GOAL_PER_DAY = 10;
+// The 10/day goal starts counting from this date, not from the first entry
+// ever logged — otherwise months of hiatus would count against the pace.
+const GOAL_START = new Date(2026, 6, 15); // July 15, 2026
 
 const STATUS_COLORS: Record<string, string> = {
   'Applied': '#3b82f6',
-  'Waiting for Response': '#f59e0b',
+  'Waiting for Response': '#f5a623',
   'Next Stage': '#8b5cf6',
   'Offer': '#10b981',
   'Rejected': '#f43f5e',
@@ -37,10 +41,10 @@ function ProgressRing({ pct, size = 100, stroke = 9 }: { pct: number; size?: num
   const offset = circ - (Math.min(pct, 100) / 100) * circ;
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(148,163,184,0.12)" strokeWidth={stroke} />
       <circle
         cx={size / 2} cy={size / 2} r={r} fill="none"
-        stroke="#8b5cf6" strokeWidth={stroke}
+        stroke="var(--accent)" strokeWidth={stroke}
         strokeDasharray={circ} strokeDashoffset={offset}
         strokeLinecap="round"
         style={{ transition: 'stroke-dashoffset 0.6s ease' }}
@@ -50,7 +54,7 @@ function ProgressRing({ pct, size = 100, stroke = 9 }: { pct: number; size?: num
 }
 
 const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
-  applications, dailyEntries, rejectionCount, goalDate = '2026-07-06',
+  applications, dailyEntries, rejectionCount,
 }) => {
 
   const totalApplications = dailyEntries.reduce((s, e) => s + e.count, 0);
@@ -103,35 +107,31 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   };
   const streak = getStreak();
 
-  // Sprint (3-month goal) progress
-  const getSprintInfo = () => {
-    const goal = 1000;
-    const target = new Date(goalDate + 'T00:00:00');
-    const todayDate = new Date(); todayDate.setHours(0, 0, 0, 0);
-    const daysLeft = Math.max(0, Math.ceil((target.getTime() - todayDate.getTime()) / 86400000));
-    // Sprint start = earliest entry, or 90 days before target
-    const sprintStart = dailyEntries.length > 0
-      ? dailyEntries.reduce((earliest, e) => {
-          const d = parseEntryDate(e.date);
-          return d < earliest ? d : earliest;
-        }, parseEntryDate(dailyEntries[0].date))
-      : (() => { const s = new Date(target); s.setDate(s.getDate() - 90); return s; })();
-    const sprintLength = Math.max(1, Math.round((target.getTime() - sprintStart.getTime()) / 86400000));
-    const daysPassed = Math.max(1, sprintLength - daysLeft);
-    const pct = Math.min(100, Math.round((daysPassed / sprintLength) * 100));
-    const requiredPace = daysLeft > 0 ? ((goal - totalApplications) / daysLeft) : 0;
-    const actualPace = totalApplications / daysPassed;
-    const onTrack = actualPace >= goal / sprintLength;
-    return { daysLeft, pct, goal, onTrack, requiredPace: Math.max(0, requiredPace) };
+  // Cumulative goal: the target grows by GOAL_PER_DAY every day since
+  // GOAL_START, and every application logged since then counts toward it —
+  // surplus days carry over. Entries before GOAL_START don't count either way.
+  const getGoalInfo = () => {
+    const todayMid = new Date(); todayMid.setHours(0, 0, 0, 0);
+    const start = new Date(GOAL_START); start.setHours(0, 0, 0, 0);
+    const daysTracked = Math.max(1, Math.floor((todayMid.getTime() - start.getTime()) / 86400000) + 1);
+    const logged = dailyEntries.reduce((sum, e) => {
+      const d = parseEntryDate(e.date); d.setHours(0, 0, 0, 0);
+      return d >= start ? sum + e.count : sum;
+    }, 0);
+    const expected = daysTracked * GOAL_PER_DAY;
+    const delta = logged - expected;
+    const pct = expected > 0 ? Math.min(100, Math.round((logged / expected) * 100)) : 0;
+    const todayCount = dailyEntries.find(e => e.date === new Date().toLocaleDateString('en-US'))?.count ?? 0;
+    return { daysTracked, expected, delta, pct, todayCount, logged };
   };
-  const sprint = getSprintInfo();
+  const goal = getGoalInfo();
 
   // Daily chart (14 days)
   const getDailyData = () => {
     const data = [];
     for (let i = 13; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
-      const dateStr = d.toLocaleDateString();
+      const dateStr = d.toLocaleDateString('en-US');
       const entry = dailyEntries.find(e => e.date === dateStr);
       data.push({ date: `${d.getMonth() + 1}/${d.getDate()}`, count: entry?.count ?? 0 });
     }
@@ -171,7 +171,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   // Stage funnel
   const getFunnelData = () => [
     { stage: 'Applied', count: totalApplications, color: '#3b82f6' },
-    { stage: 'Responded', count: responseCount, color: '#f59e0b' },
+    { stage: 'Responded', count: responseCount, color: '#f5a623' },
     { stage: 'Next Stage', count: nextStageCount, color: '#8b5cf6' },
     { stage: 'Offer', count: applications.filter(a => a.status === 'Offer').length, color: '#10b981' },
   ];
@@ -199,14 +199,14 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
     : '0';
 
   const TOOLTIP_STYLE = {
-    backgroundColor: '#141825',
-    border: '1px solid rgba(255,255,255,0.11)',
+    backgroundColor: '#171c2b',
+    border: '1px solid rgba(148,163,184,0.20)',
     borderRadius: '8px',
     fontSize: '12px',
-    color: '#eceef4',
+    color: '#f2f4f9',
   };
-  const GRID_COLOR = 'rgba(255,255,255,0.04)';
-  const TICK_COLOR = '#4a5270';
+  const GRID_COLOR = 'rgba(148,163,184,0.06)';
+  const TICK_COLOR = '#6d788f';
 
   return (
     <div className="space-y-5">
@@ -214,7 +214,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       {/* Primary stats — 4 accent cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total Apps', value: totalApplications, sub: null, color: '#f59e0b', icon: <TrendingUp className="w-3.5 h-3.5" />, bg: 'rgba(245,158,11,0.1)' },
+          { label: 'Total Apps', value: totalApplications, sub: null, color: '#f5a623', icon: <TrendingUp className="w-3.5 h-3.5" />, bg: 'rgba(245,158,11,0.1)' },
           { label: 'Active Pipeline', value: activePipeline, sub: 'interviews/offers', color: '#3b82f6', icon: <Users className="w-3.5 h-3.5" />, bg: 'rgba(59,130,246,0.1)' },
           { label: 'Rejection Rate', value: `${totalApplications > 0 ? ((rejectionCount / totalApplications) * 100).toFixed(1) : 0}%`, sub: null, color: '#f43f5e', icon: <XCircle className="w-3.5 h-3.5" />, bg: 'rgba(244,63,94,0.1)' },
           { label: 'Current Streak', value: `${streak}d`, sub: 'consecutive days', color: '#f97316', icon: <Flame className="w-3.5 h-3.5" />, bg: 'rgba(249,115,22,0.1)' },
@@ -246,33 +246,33 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         ))}
       </div>
 
-      {/* Sprint progress */}
+      {/* Cumulative goal — 10/day, surplus carries over */}
       <div className="hub-card p-5">
         <div className="flex items-center gap-2 mb-5">
           <Target className="w-4 h-4" style={{ color: 'var(--accent)' }} />
-          <h3 className="text-sm font-bold" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>3-Month Sprint — Goal: {sprint.goal}</h3>
+          <h3 className="text-sm font-bold" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>Daily Goal — {GOAL_PER_DAY}/day</h3>
           <span className="ml-auto text-xs font-semibold px-2.5 py-1 rounded-full" style={
-            sprint.onTrack
+            goal.delta >= 0
               ? { background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' }
-              : { background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)' }
+              : { background: 'rgba(244,63,94,0.12)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.2)' }
           }>
-            {sprint.onTrack ? 'On Track' : 'Pick Up Pace'}
+            {goal.delta >= 0 ? `${goal.delta} ahead of pace` : `${Math.abs(goal.delta)} behind pace`}
           </span>
         </div>
         <div className="flex items-center gap-8">
           <div className="relative flex-shrink-0">
-            <ProgressRing pct={sprint.pct} size={108} stroke={10} />
+            <ProgressRing pct={goal.pct} size={108} stroke={10} />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="stat-num text-xl" style={{ color: 'var(--accent)' }}>{sprint.pct}%</span>
-              <span className="text-xs" style={{ color: 'var(--text-3)' }}>done</span>
+              <span className="stat-num text-xl" style={{ color: 'var(--accent)' }}>{goal.pct}%</span>
+              <span className="text-xs" style={{ color: 'var(--text-3)' }}>of pace</span>
             </div>
           </div>
           <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Goal', value: sprint.goal, sub: 'applications' },
-              { label: 'Progress', value: totalApplications, sub: 'logged', highlight: true },
-              { label: 'Days Left', value: sprint.daysLeft, sub: 'of 90' },
-              { label: 'Need/Day', value: sprint.requiredPace.toFixed(1), sub: 'to hit goal' },
+              { label: 'Logged', value: goal.logged, sub: 'since Jul 15', highlight: true },
+              { label: 'Expected', value: goal.expected, sub: `${GOAL_PER_DAY} × ${goal.daysTracked} days` },
+              { label: 'Today', value: `${goal.todayCount}/${GOAL_PER_DAY}`, sub: goal.todayCount >= GOAL_PER_DAY ? 'goal hit 🎉' : `${GOAL_PER_DAY - goal.todayCount} to go` },
+              { label: 'Day', value: goal.daysTracked, sub: 'of the grind' },
             ].map(({ label, value, sub, highlight }) => (
               <div key={label}>
                 <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-3)' }}>{label}</div>
@@ -284,13 +284,13 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
         </div>
         <div className="mt-5 rounded-full h-2" style={{ background: 'rgba(255,255,255,0.07)' }}>
           <div className="h-2 rounded-full" style={{
-            width: `${Math.min((totalApplications / sprint.goal) * 100, 100)}%`,
+            width: `${goal.pct}%`,
             background: 'linear-gradient(90deg, var(--accent), #fbbf24)',
             boxShadow: '0 0 12px var(--accent-glow)',
           }} />
         </div>
         <div className="flex justify-between text-xs mt-1.5" style={{ color: 'var(--text-3)' }}>
-          <span>0</span><span>{Math.round(sprint.goal / 2)}</span><span>{sprint.goal}</span>
+          <span>0</span><span>{Math.round(goal.expected / 2)}</span><span>{goal.expected} expected</span>
         </div>
       </div>
 
@@ -305,7 +305,9 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <XAxis dataKey="date" tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Apps" />
+                <ReferenceLine y={GOAL_PER_DAY} stroke="#f5a623" strokeDasharray="4 4" strokeOpacity={0.5} ifOverflow="extendDomain"
+                  label={{ value: 'goal', position: 'insideTopRight', fontSize: 10, fill: '#f5a623', opacity: 0.7 }} />
+                <Bar dataKey="count" fill="#f5a623" radius={[4, 4, 0, 0]} name="Apps" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -383,7 +385,7 @@ const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                 <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 10, fill: '#8892a8' }} axisLine={false} tickLine={false} />
                 <Tooltip contentStyle={TOOLTIP_STYLE} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="count" fill="#f59e0b" radius={[0, 4, 4, 0]} name="Applications" />
+                <Bar dataKey="count" fill="#f5a623" radius={[0, 4, 4, 0]} name="Applications" />
               </BarChart>
             </ResponsiveContainer>
           </div>

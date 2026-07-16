@@ -20,7 +20,7 @@ const syne = Syne({
 
 export const metadata: Metadata = {
   title: "Job Hunt Hub",
-  description: "Your 3-month job search command center",
+  description: "Your job search command center — 10 applications a day",
 };
 
 export default function RootLayout({

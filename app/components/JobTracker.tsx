@@ -1,12 +1,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Calendar, TrendingUp, Edit2, Trash2, Check, X, Upload, LayoutList, Kanban, BarChart2, Clock, Code2 } from 'lucide-react';
+import { Plus, Calendar, TrendingUp, Edit2, Trash2, Check, X, Upload, LayoutList, Kanban, BarChart2, Clock, Pin } from 'lucide-react';
 import { Application, DailyEntry } from '../types';
 import ImportModal from './ImportModal';
 import KanbanBoard from './KanbanBoard';
 import AnalyticsDashboard from './AnalyticsDashboard';
-import LeetCodeTracker from './LeetCodeTracker';
+
+const GOAL_PER_DAY = 10;
+// The 10/day goal starts counting from this date, not from the first entry
+// ever logged — otherwise months of hiatus would count against the pace.
+const GOAL_START = new Date(2026, 6, 15); // July 15, 2026
+
+// Parse "M/D/YYYY" entry dates reliably
+const parseEntryDate = (dateStr: string): Date => {
+  const parts = dateStr.split('/');
+  if (parts.length === 3) {
+    const [m, d, y] = parts.map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return new Date(dateStr);
+};
 
 const JobTracker = () => {
   const [entries, setEntries] = useState<DailyEntry[]>([]);
@@ -45,7 +59,9 @@ const JobTracker = () => {
   const [filterDateEnd, setFilterDateEnd] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  const today = new Date().toLocaleDateString();
+  // Locked to en-US: this string is the DailyEntry DB key and is also
+  // rendered during SSR — a locale mismatch breaks hydration and lookups.
+  const today = new Date().toLocaleDateString('en-US');
 
   // Load data from API
   const fetchData = async () => {
@@ -130,8 +146,12 @@ const JobTracker = () => {
     const activeStatuses = ['Applied', 'Next Stage', 'Waiting for Response'];
     
     let filtered = applications.filter(app => {
-      // Only show active statuses
-      if (!activeStatuses.includes(app.status)) return false;
+      // Status filter: a specific pick overrides the default active set
+      if (filterStatus === 'All') {
+        if (!activeStatuses.includes(app.status)) return false;
+      } else if (app.status !== filterStatus) {
+        return false;
+      }
 
       // Date Range Filter
       if (filterDateStart) {
@@ -152,8 +172,10 @@ const JobTracker = () => {
       );
     });
 
-    // Sort: Next Stage first (by deadline), then Waiting/Applied by newest date
+    // Sort: pinned first, then Next Stage (by deadline), then Waiting/Applied by newest date
     return filtered.sort((a, b) => {
+      // Pinned applications always float to the top
+      if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
       // Priority: Next Stage first
       if (a.status === 'Next Stage' && b.status !== 'Next Stage') return -1;
       if (b.status === 'Next Stage' && a.status !== 'Next Stage') return 1;
@@ -328,6 +350,25 @@ const JobTracker = () => {
     }
   };
 
+  // Toggle pin on an application
+  const togglePin = async (id: number) => {
+    const app = applications.find(a => a.id === id);
+    if (!app) return;
+    const newPinned = !app.pinned;
+    setApplications(prev => prev.map(a => a.id === id ? { ...a, pinned: newPinned } : a));
+    try {
+      const res = await fetch(`/api/applications/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pinned: newPinned })
+      });
+      if (!res.ok) throw new Error('Failed to update pin');
+    } catch (error) {
+      console.error(error);
+      setApplications(prev => prev.map(a => a.id === id ? { ...a, pinned: !newPinned } : a));
+    }
+  };
+
   // Show next stage popup
   const showNextStage = (id: number) => {
     const app = applications.find(a => a.id === id);
@@ -441,47 +482,24 @@ const JobTracker = () => {
   };
 
   const totalApplications = entries.reduce((sum, entry) => sum + entry.count, 0);
-  const averagePerDay = entries.length > 0 ? (totalApplications / entries.length).toFixed(1) : 0;
 
-  // Sprint countdown — target date, stored in localStorage
-  const DEFAULT_GOAL_DATE = '2026-07-06';
-  const [goalDate, setGoalDate] = useState<string>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('sprintGoalDate') || DEFAULT_GOAL_DATE;
-    }
-    return DEFAULT_GOAL_DATE;
-  });
-  const [editingGoalDate, setEditingGoalDate] = useState(false);
-
-  const saveGoalDate = (val: string) => {
-    setGoalDate(val);
-    localStorage.setItem('sprintGoalDate', val);
-    setEditingGoalDate(false);
+  // Cumulative pace vs the 10/day goal. The target grows by 10 every day
+  // since GOAL_START, so a 15-app day banks 5 toward the running total —
+  // surplus carries over. Only entries since GOAL_START count.
+  const getPaceInfo = () => {
+    const todayMid = new Date(); todayMid.setHours(0, 0, 0, 0);
+    const start = new Date(GOAL_START); start.setHours(0, 0, 0, 0);
+    const daysTracked = Math.max(1, Math.floor((todayMid.getTime() - start.getTime()) / 86400000) + 1);
+    const logged = entries.reduce((sum, e) => {
+      const d = parseEntryDate(e.date); d.setHours(0, 0, 0, 0);
+      return d >= start ? sum + e.count : sum;
+    }, 0);
+    const expected = daysTracked * GOAL_PER_DAY;
+    const delta = logged - expected;
+    const pct = expected > 0 ? Math.min(100, Math.round((logged / expected) * 100)) : 0;
+    return { daysTracked, expected, delta, pct, logged };
   };
-
-  const getSprintInfo = () => {
-    const target = new Date(goalDate + 'T00:00:00');
-    const now = new Date(); now.setHours(0, 0, 0, 0);
-    const totalDays = Math.round((target.getTime() - new Date(DEFAULT_GOAL_DATE + 'T00:00:00').getTime()) / 86400000) + 97; // approx span
-    const daysLeft = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86400000));
-    // pct based on how far from today-to-target we've come since the sprint started
-    // Use earliest entry date as start, fallback to 90 days before target
-    const sprintStart = (() => {
-      if (entries.length > 0) {
-        return entries.reduce((earliest, e) => {
-          const [m, d, y] = e.date.split('/').map(Number);
-          const dt = new Date(y, m - 1, d);
-          return dt < earliest ? dt : earliest;
-        }, (() => { const [m, d, y] = entries[0].date.split('/').map(Number); return new Date(y, m - 1, d); })());
-      }
-      const s = new Date(target); s.setDate(s.getDate() - 90); return s;
-    })();
-    const sprintLength = Math.max(1, Math.round((target.getTime() - sprintStart.getTime()) / 86400000));
-    const daysPassed = Math.max(0, sprintLength - daysLeft);
-    const pct = Math.min(100, Math.round((daysPassed / sprintLength) * 100));
-    return { daysLeft, pct, targetDate: goalDate };
-  };
-  const sprint = getSprintInfo();
+  const pace = getPaceInfo();
 
   const handleExport = () => {
     const data = {
@@ -504,7 +522,7 @@ const JobTracker = () => {
   return (
     <div className="flex min-h-screen font-sans" style={{ background: 'var(--bg-base)', color: 'var(--text-1)' }}>
       {/* Sidebar Navigation */}
-      <aside className="w-60 fixed h-full z-20 hidden md:flex flex-col" style={{ background: 'linear-gradient(180deg, #0c0f1a 0%, #090c15 100%)', borderRight: '1px solid var(--border)' }}>
+      <aside className="w-60 fixed h-full z-20 hidden md:flex flex-col" style={{ background: 'linear-gradient(180deg, #0d111c 0%, #0a0d15 100%)', borderRight: '1px solid var(--border)' }}>
         {/* Logo */}
         <div className="px-5 pt-6 pb-5" style={{ borderBottom: '1px solid var(--border)' }}>
           <div className="flex items-center gap-3">
@@ -514,7 +532,7 @@ const JobTracker = () => {
             </div>
             <div>
               <div className="text-sm font-bold leading-tight" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>Job Hunt Hub</div>
-              <div className="text-xs" style={{ color: 'var(--text-3)' }}>3-month sprint</div>
+              <div className="text-xs" style={{ color: 'var(--text-3)' }}>{GOAL_PER_DAY} a day, every day</div>
             </div>
           </div>
         </div>
@@ -527,7 +545,6 @@ const JobTracker = () => {
             { id: 'history', icon: Calendar, label: 'History', count: null },
             { id: 'rejected', icon: X, label: 'Rejected', count: rejectionCount > 0 ? rejectionCount : null },
             { id: 'ghosted', icon: Clock, label: 'Ghosted', count: applications.filter(a => a.status === 'Ghosted').length || null },
-            { id: 'leetcode', icon: Code2, label: 'LeetCode', count: null },
           ] as const).map(({ id, icon: Icon, label, count }) => (
             <button
               key={id}
@@ -568,54 +585,35 @@ const JobTracker = () => {
             </div>
             <div className="rounded-full h-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
               <div className="h-1 rounded-full" style={{
-                width: `${Math.min((currentTodayCount / 5) * 100, 100)}%`,
+                width: `${Math.min((currentTodayCount / GOAL_PER_DAY) * 100, 100)}%`,
                 background: 'var(--accent)',
                 boxShadow: '0 0 8px var(--accent-glow)',
               }} />
             </div>
             <div className="flex justify-between text-xs mt-1.5" style={{ color: 'var(--text-3)' }}>
-              <span>goal: 5/day</span>
+              <span>goal: {GOAL_PER_DAY}/day</span>
               <span>{totalApplications} total</span>
             </div>
           </div>
 
-          {/* Sprint countdown */}
+          {/* Cumulative pace vs 10/day goal */}
           <div className="rounded-xl p-4 pb-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>Sprint</span>
-              <span className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>{sprint.daysLeft}d left</span>
+              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>Pace</span>
+              <span className="text-xs font-semibold" style={{ color: pace.delta >= 0 ? '#34d399' : '#fb7185' }}>
+                {pace.delta >= 0 ? `+${pace.delta} ahead` : `${pace.delta} behind`}
+              </span>
             </div>
             <div className="rounded-full h-1" style={{ background: 'rgba(255,255,255,0.07)' }}>
               <div className="h-1 rounded-full" style={{
-                width: `${sprint.pct}%`,
+                width: `${pace.pct}%`,
                 background: 'linear-gradient(90deg, var(--accent), #fbbf24)',
                 boxShadow: '0 0 8px var(--accent-glow)',
               }} />
             </div>
-            <div className="mt-2 flex items-center justify-between gap-1">
-              <span className="text-xs" style={{ color: 'var(--text-3)' }}>{sprint.pct}% complete</span>
-              {editingGoalDate ? (
-                <input
-                  type="date"
-                  defaultValue={goalDate}
-                  autoFocus
-                  onBlur={e => saveGoalDate(e.target.value || goalDate)}
-                  onKeyDown={e => { if (e.key === 'Enter') saveGoalDate((e.target as HTMLInputElement).value || goalDate); if (e.key === 'Escape') setEditingGoalDate(false); }}
-                  className="text-xs rounded px-1.5 py-0.5 focus:outline-none"
-                  style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-md)', color: 'var(--accent)', width: '110px' }}
-                />
-              ) : (
-                <button
-                  onClick={() => setEditingGoalDate(true)}
-                  className="text-xs rounded px-1.5 py-0.5"
-                  style={{ color: 'var(--text-3)', border: '1px solid transparent' }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-3)'; (e.currentTarget as HTMLButtonElement).style.borderColor = 'transparent'; }}
-                  title="Click to change goal date"
-                >
-                  {new Date(goalDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                </button>
-              )}
+            <div className="flex justify-between text-xs mt-1.5" style={{ color: 'var(--text-3)' }}>
+              <span>{pace.logged} of {pace.expected} expected</span>
+              <span>day {pace.daysTracked}</span>
             </div>
           </div>
         </div>
@@ -649,14 +647,13 @@ const JobTracker = () => {
       <main className="flex-1 md:ml-60">
         {/* Top Header */}
         <header className="sticky top-0 z-10 px-8 py-4 flex justify-between items-center backdrop-blur-md"
-          style={{ background: 'rgba(9,9,15,0.85)', borderBottom: '1px solid var(--border)' }}>
+          style={{ background: 'rgba(10,13,21,0.85)', borderBottom: '1px solid var(--border)' }}>
           <div>
             <h2 className="text-lg font-bold font-display" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>
               {currentPage === 'main' ? 'Active Applications' :
                currentPage === 'rejected' ? 'Rejected Applications' :
                currentPage === 'ghosted' ? 'Ghosted Applications' :
-               currentPage === 'analytics' ? 'Analytics' :
-               currentPage === 'leetcode' ? 'LeetCode Practice' : 'History'}
+               currentPage === 'analytics' ? 'Analytics' : 'History'}
             </h2>
             <p className="text-xs" style={{ color: 'var(--text-3)' }}>{today}</p>
           </div>
@@ -720,7 +717,7 @@ const JobTracker = () => {
                     onClick={() => setShowFilters(!showFilters)}
                     className="px-4 py-2 rounded-xl flex items-center gap-2 text-sm font-medium"
                     style={showFilters
-                      ? { background: 'var(--accent-dim)', border: '1px solid rgba(245,158,11,0.3)', color: 'var(--accent)' }
+                      ? { background: 'var(--accent-dim)', border: '1px solid rgba(245,166,35,0.3)', color: 'var(--accent)' }
                       : { background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-2)' }}
                   >
                     <LayoutList className="w-4 h-4" />
@@ -782,20 +779,21 @@ const JobTracker = () => {
                 getFilteredAndSortedApplications().length > 0 ? (
                   <div className="grid gap-3">
                     {getFilteredAndSortedApplications().map((app) => (
-                      <div key={app.id} className="hub-card group p-5 cursor-default">
+                      <div key={app.id} className={`hub-card group p-5 cursor-default${app.pinned ? ' pinned' : ''}`}>
                         <div className="flex justify-between items-start">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-3 mb-1 flex-wrap">
+                              {app.pinned && <Pin className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--accent)', fill: 'var(--accent)' }} />}
                               <h3 className="font-bold text-base" style={{ color: 'var(--text-1)', fontFamily: 'var(--font-syne)' }}>{app.company}</h3>
                               <span className="px-2.5 py-0.5 text-xs font-medium rounded-full flex items-center gap-1.5" style={
                                 app.status === 'Applied' ? { background: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: '1px solid rgba(59,130,246,0.2)' } :
-                                app.status === 'Waiting for Response' ? { background: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)' } :
+                                app.status === 'Waiting for Response' ? { background: 'rgba(245,166,35,0.12)', color: '#fbbf24', border: '1px solid rgba(245,166,35,0.2)' } :
                                 app.status === 'Next Stage' ? { background: 'rgba(139,92,246,0.12)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' } :
                                 app.status === 'Offer' ? { background: 'rgba(16,185,129,0.12)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' } :
                                 { background: 'rgba(244,63,94,0.12)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.2)' }
                               }>
                                 <span className="w-1.5 h-1.5 rounded-full" style={{
-                                  background: app.status === 'Applied' ? '#3b82f6' : app.status === 'Waiting for Response' ? '#f59e0b' : app.status === 'Next Stage' ? '#8b5cf6' : app.status === 'Offer' ? '#10b981' : '#f43f5e'
+                                  background: app.status === 'Applied' ? '#3b82f6' : app.status === 'Waiting for Response' ? '#f5a623' : app.status === 'Next Stage' ? '#8b5cf6' : app.status === 'Offer' ? '#10b981' : '#f43f5e'
                                 }} />
                                 {app.status}
                               </span>
@@ -813,12 +811,19 @@ const JobTracker = () => {
                             {app.status === 'Next Stage' && app.nextStageType && (
                               <div className="mt-3 flex items-center gap-2 text-xs px-3 py-2 rounded-lg" style={{ background: 'rgba(139,92,246,0.1)', color: '#a78bfa', border: '1px solid rgba(139,92,246,0.2)' }}>
                                 <span className="font-semibold">Next:</span> {app.nextStageType}
-                                {app.deadline && <span className="ml-auto opacity-70">due {new Date(app.deadline).toLocaleDateString()}</span>}
+                                {app.deadline && <span className="ml-auto opacity-70">due {new Date(app.deadline).toLocaleDateString('en-US')}</span>}
                               </div>
                             )}
                           </div>
 
-                          <div className="flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity ml-3">
+                          <div className={`flex flex-col gap-1.5 transition-opacity ml-3 ${app.pinned ? '' : 'opacity-0 group-hover:opacity-100'}`}>
+                            <button onClick={() => togglePin(app.id)}
+                              className="p-1.5 rounded-lg transition-colors"
+                              title={app.pinned ? 'Unpin' : 'Pin to top'}
+                              style={app.pinned ? { color: 'var(--accent)' } : { color: 'var(--text-3)' }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--accent-dim)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)'; }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = app.pinned ? 'var(--accent)' : 'var(--text-3)'; }}
+                            ><Pin className="w-3.5 h-3.5" style={app.pinned ? { fill: 'var(--accent)' } : undefined} /></button>
                             <button onClick={() => startEditingApp(app)}
                               className="p-1.5 rounded-lg transition-colors"
                               style={{ color: 'var(--text-3)' }}
@@ -845,7 +850,7 @@ const JobTracker = () => {
                           {app.status === 'Next Stage' && (
                             <button onClick={() => updateApplicationStatus(app.id, 'Waiting for Response')}
                               className="flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors"
-                              style={{ background: 'rgba(245,158,11,0.1)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)' }}>
+                              style={{ background: 'rgba(245,166,35,0.1)', color: '#fbbf24', border: '1px solid rgba(245,166,35,0.2)' }}>
                               Waiting for Response
                             </button>
                           )}
@@ -859,12 +864,12 @@ const JobTracker = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16 text-slate-500">
-                    <div className="w-14 h-14 bg-violet-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <Plus className="w-7 h-7 text-violet-300" />
+                  <div className="text-center py-16" style={{ color: 'var(--text-3)' }}>
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'var(--accent-dim)', border: '1px solid var(--border)' }}>
+                      <Plus className="w-7 h-7" style={{ color: 'var(--accent)' }} />
                     </div>
-                    <p className="text-lg font-medium mb-1 text-slate-700">Ready to start tracking!</p>
-                    <p className="text-sm">Click the <span className="font-semibold text-violet-600">+ Log</span> button in the bottom-right to add your first entry.</p>
+                    <p className="text-lg font-medium mb-1" style={{ color: 'var(--text-1)' }}>No applications here</p>
+                    <p className="text-sm">Click <span className="font-semibold" style={{ color: 'var(--accent)' }}>+ Log</span> in the bottom-right to add one.</p>
                   </div>
                 )
               )}
@@ -919,7 +924,7 @@ const JobTracker = () => {
                           <div className="text-sm" style={{ color: 'var(--text-2)' }}>{app.position}</div>
                           <div className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
                             Applied: {app.date} at {app.timestamp}
-                            {app.lastUpdated && <span className="ml-2">| Last updated: {new Date(app.lastUpdated).toLocaleDateString()}</span>}
+                            {app.lastUpdated && <span className="ml-2">| Last updated: {new Date(app.lastUpdated).toLocaleDateString('en-US')}</span>}
                           </div>
                         </div>
                         <span className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'rgba(100,116,139,0.15)', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.2)' }}>
@@ -1034,7 +1039,7 @@ const JobTracker = () => {
                               <div className="text-sm" style={{ color: 'var(--text-2)' }}>{app.position}</div>
                               <div className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
                                 Applied: {app.date} at {app.timestamp}
-                                {app.lastUpdated && <span className="ml-2">| Rejected: {new Date(app.lastUpdated).toLocaleDateString()}</span>}
+                                {app.lastUpdated && <span className="ml-2">| Rejected: {new Date(app.lastUpdated).toLocaleDateString('en-US')}</span>}
                               </div>
                             </div>
                             <span className="px-2 py-0.5 text-xs rounded-full" style={{ background: 'rgba(244,63,94,0.1)', color: '#fb7185', border: '1px solid rgba(244,63,94,0.2)' }}>
@@ -1063,10 +1068,7 @@ const JobTracker = () => {
               applications={applications}
               dailyEntries={entries}
               rejectionCount={rejectionCount}
-              goalDate={goalDate}
             />
-          ) : currentPage === 'leetcode' ? (
-            <LeetCodeTracker />
           ) : (
             /* History Page */
             <div>
